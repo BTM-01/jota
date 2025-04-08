@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Upload files to Google Drive</title>
+    <link rel="stylesheet" href="./looks.css">
+</head>
+
+<body>
+    <div>
+        <form id="image-upload-form">
+            <div id="InputAreaDiv">
+                <label for="image-input">Select images:</label>
+                <input type="file" name="image1" id="image-input" multiple>
+            </div>
+            <button id="submitBTN" type="submit">Upload Image</button>
+        </form>
+        <div id="status"></div>
+    </div>
+<script>
+    const form = document.getElementById('image-upload-form');
+    const input = document.getElementById('image-input');
+    const statusDiv = document.getElementById('status');
+    const folderId = '19rd3VvIRhCsADDQW_8rVlM8635_3gqDG';
+    const scriptUrl = 'https://script.google.com/macros/d/AKfycbxxSDznR_-vUdgcw596moH1o9ChPOfyqJiHWKc5eNds86OBoUV_6inYOIGysmpMW0I/exec';
+
+    form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        statusDiv.textContent = 'Uploading...';
+
+        const files = input.files;
+
+        if (!files || files.length === 0) {
+            statusDiv.textContent = 'No files selected';
+            return;
+        }
+
+        try {
+            // Upload each file one by one
+            for (const [index, file] of Array.from(files).entries()) {
+                const formData = new FormData();
+                formData.append('file', file);
+                formData.append('folderId', folderId);
+
+                const response = await fetch(scriptUrl, {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const result = await response.text();
+                console.log(File ${index + 1} uploaded:, result);
+            }
+
+            statusDiv.textContent = 'All files uploaded successfully!';
+        } catch (error) {
+            console.error('Upload error:', error);
+            statusDiv.textContent = Upload failed: ${error.message};
+        }
+    });
+</script>
+
+    <!-- <script>
+        function doPost(e) {
+            try {
+                var folderId = e.parameter.folderId || '19rd3VvIRhCsADDQW_8rVlM8635_3gqDG';
+                var folder = DriveApp.getFolderById(folderId);
+
+                // Get the file data from the POST request
+                var fileBlob = e.postData.contents;
+                var file = folder.createFile(Utilities.newBlob(fileBlob));
+
+                return ContentService.createTextOutput(JSON.stringify({
+                    status: 'success',
+                    message: 'File uploaded successfully!',
+                    fileId: file.getId(),
+                    fileName: file.getName()
+                })).setMimeType(ContentService.MimeType.JSON);
+            } catch (error) {
+                return ContentService.createTextOutput(JSON.stringify({
+                    status: 'error',
+                    message: error.message
+                })).setMimeType(ContentService.MimeType.JSON);
+            }
+        }
+    </script> -->
+</body>
+
+</html>
